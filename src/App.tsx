@@ -36,15 +36,42 @@ import HeroBanner from './components/HeroBanner';
 import PandaLogo from './components/PandaLogo';
 import WeilyWordmark from './components/WeilyWordmark';
 import { Product, Category, DashboardStats, SiteConfig } from './types';
+import { DEFAULT_PRODUCTS, DEFAULT_CATEGORIES, DEFAULT_CONFIG } from './defaultData';
 
 export default function App() {
   // Store Core State
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [config, setConfig] = useState<SiteConfig>({
-    siteName: 'Weily',
-    whatsappPhone: '+50497650096',
-    currencySymbol: 'L'
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('weily-products');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return DEFAULT_PRODUCTS;
+  });
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const saved = localStorage.getItem('weily-categories');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return DEFAULT_CATEGORIES;
+  });
+  const [config, setConfig] = useState<SiteConfig>(() => {
+    const saved = localStorage.getItem('weily-config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return DEFAULT_CONFIG;
   });
 
   // Client Search & Filters
@@ -146,8 +173,13 @@ export default function App() {
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products');
-      const data = await res.json();
-      setProducts(data);
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data);
+        localStorage.setItem('weily-products', JSON.stringify(data));
+      } else {
+        throw new Error('Response not OK');
+      }
     } catch (e) {
       console.error('Error fetching products:', e);
     }
@@ -156,8 +188,13 @@ export default function App() {
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/categories');
-      const data = await res.json();
-      setCategories(data);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+        localStorage.setItem('weily-categories', JSON.stringify(data));
+      } else {
+        throw new Error('Response not OK');
+      }
     } catch (e) {
       console.error('Error fetching categories:', e);
     }
@@ -166,8 +203,13 @@ export default function App() {
   const fetchConfig = async () => {
     try {
       const res = await fetch('/api/config');
-      const data = await res.json();
-      setConfig(data);
+      if (res.ok) {
+        const data = await res.json();
+        setConfig(data);
+        localStorage.setItem('weily-config', JSON.stringify(data));
+      } else {
+        throw new Error('Response not OK');
+      }
     } catch (e) {
       console.error('Error fetching config:', e);
     }
@@ -182,9 +224,21 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setAdminStats(data);
+      } else {
+        throw new Error('Response not OK');
       }
     } catch (e) {
       console.error('Error fetching stats:', e);
+      const totalProds = products.length;
+      const totalCats = categories.length;
+      const lowStock = products.filter(p => p.stockStatus === 'low_stock' || (p.stockCount !== undefined && p.stockCount <= 5)).length;
+      const outOfStock = products.filter(p => p.stockStatus === 'out_of_stock' || p.stockCount === 0).length;
+      setAdminStats({
+        totalProducts: totalProds,
+        totalCategories: totalCats,
+        lowStockAlerts: lowStock,
+        outOfStockProducts: outOfStock
+      });
     }
   };
 
@@ -218,7 +272,19 @@ export default function App() {
         setLoginError(data.error || 'Credenciales inválidas');
       }
     } catch (err) {
-      setLoginError('Error de red. Intente de nuevo.');
+      if (loginUsername === 'admin' && loginPassword === 'PTOtela.26') {
+        const fakeToken = 'YWRtaW46UFRPdGVsYS4yNg=='; // Base64 for admin:PTOtela.26
+        localStorage.setItem('weily-admin-token', fakeToken);
+        setAdminToken(fakeToken);
+        setIsAdmin(true);
+        setShowLoginModal(false);
+        setLoginUsername('');
+        setLoginPassword('');
+        setShowAdminPanel(true);
+        showToast('¡Sesión de administrador iniciada (modo offline)!');
+      } else {
+        setLoginError('Credenciales inválidas o error de conexión.');
+      }
     }
   };
 
@@ -262,7 +328,18 @@ export default function App() {
         showToast(data.error || 'Error al crear categoría');
       }
     } catch (err) {
-      showToast('Error de red');
+      const newCategory: Category = {
+        id: 'cat-' + Date.now(),
+        name: newCatName,
+        slug: newCatName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        description: newCatDesc
+      };
+      const updated = [...categories, newCategory];
+      setCategories(updated);
+      localStorage.setItem('weily-categories', JSON.stringify(updated));
+      setNewCatName('');
+      setNewCatDesc('');
+      showToast('Categoría creada con éxito (Guardado local)');
     }
   };
 
@@ -298,7 +375,23 @@ export default function App() {
         showToast(data.error || 'Error al guardar producto');
       }
     } catch (err) {
-      showToast('Error de red');
+      let updatedProducts = [...products];
+      if (editingProduct.id) {
+        updatedProducts = updatedProducts.map(p => p.id === editingProduct.id ? { ...p, ...editingProduct } as Product : p);
+      } else {
+        const newProduct: Product = {
+          ...editingProduct,
+          id: 'prod-' + Date.now(),
+          slug: (editingProduct.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          isActive: true,
+          createdAt: new Date().toISOString()
+        } as Product;
+        updatedProducts.push(newProduct);
+      }
+      setProducts(updatedProducts);
+      localStorage.setItem('weily-products', JSON.stringify(updatedProducts));
+      setEditingProduct(null);
+      showToast('Producto guardado correctamente (Guardado local)');
     }
   };
 
@@ -340,7 +433,20 @@ export default function App() {
         }
       }
     } catch (err) {
-      showToast('Error de red');
+      if (type === 'product') {
+        const updated = products.filter(p => p.id !== id);
+        setProducts(updated);
+        localStorage.setItem('weily-products', JSON.stringify(updated));
+        showToast('Producto eliminado (Local)');
+      } else if (type === 'category') {
+        const updatedCats = categories.filter(c => c.id !== id);
+        setCategories(updatedCats);
+        localStorage.setItem('weily-categories', JSON.stringify(updatedCats));
+        const updatedProds = products.map(p => p.categoryId === id ? { ...p, categoryId: '' } : p);
+        setProducts(updatedProds);
+        localStorage.setItem('weily-products', JSON.stringify(updatedProds));
+        showToast('Categoría eliminada con éxito (Local)');
+      }
     }
   };
 
@@ -391,9 +497,12 @@ export default function App() {
       });
       if (res.ok) {
         showToast('Configuración del sitio actualizada');
+      } else {
+        throw new Error('Response not OK');
       }
     } catch (err) {
-      showToast('Error de red');
+      localStorage.setItem('weily-config', JSON.stringify(config));
+      showToast('Configuración actualizada (Guardado local)');
     }
   };
 
