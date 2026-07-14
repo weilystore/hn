@@ -1,0 +1,84 @@
+{
+  "categories": [
+    {
+      "id": "cat-tec",
+      "name": "Tecnología",
+      "slug": "tecnologia",
+      "description": "Dispositivos, gadgets y accesorios tecnológicos de última generación."
+    },
+    {
+      "id": "cat-hog",
+      "name": "Hogar",
+      "slug": "hogar",
+      "description": "Todo lo necesario para decorar y equipar tu hogar."
+    },
+    {
+      "id": "cat-coc",
+      "name": "Cocina",
+      "slug": "cocina",
+      "description": "Electrodomésticos y utensilios prácticos para tu cocina."
+    },
+    {
+      "id": "cat-sal",
+      "name": "Salud",
+      "slug": "salud",
+      "description": "Productos para cuidar de tu salud y bienestar diario."
+    },
+    {
+      "id": "cat-bel",
+      "name": "Belleza",
+      "slug": "belleza",
+      "description": "Artículos de cuidado personal, maquillaje y fragancias."
+    },
+    {
+      "id": "cat-dep",
+      "name": "Deportes",
+      "slug": "deportes",
+      "description": "Equipamiento y ropa deportiva para mantenerte en forma."
+    },
+    {
+      "id": "cat-mas",
+      "name": "Mascotas",
+      "slug": "mascotas",
+      "description": "Alimentos y accesorios para el consentido de la casa."
+    },
+    {
+      "id": "cat-her",
+      "name": "Herramientas",
+      "slug": "herramientas",
+      "description": "Herramientas de alta calidad para tus proyectos."
+    },
+    {
+      "id": "cat-veh",
+      "name": "Vehículos",
+      "slug": "vehiculos",
+      "description": "Accesorios y repuestos para tu auto o motocicleta."
+    },
+    {
+      "id": "cat-ofi",
+      "name": "Oficina",
+      "slug": "oficina",
+      "description": "Suministros y muebles para optimizar tu espacio de trabajo."
+    },
+    {
+      "id": "cat-1783984034954",
+      "name": "Cuidado Personal",
+      "slug": "cuidado-personal",
+      "description": "Productos esenciales para tu rutina diaria de belleza, higiene y salud. Todo lo que necesitas para tu cuidado personal en un solo lugar."
+    }
+  ],
+  "products": [],
+  "users": [
+    {
+      "id": "admin-user",
+      "username": "admin",
+      "passwordHash": "b0bd8a6679bd415f002ff0e3fe98cc27827514df1c5511442353a7b0e8b67e68",
+      "role": "admin"
+    }
+  ],
+  "config": {
+    "siteName": "Weily",
+    "whatsappPhone": "+50497650096",
+    "currencySymbol": "L"
+  }
+}

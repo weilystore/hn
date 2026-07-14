@@ -1,0 +1,6 @@
+{
+  "name": "Weily",
+  "description": "Tienda Online premium inspirada en Amazon con catálogo de productos, carrito de compras, pedidos por WhatsApp y panel de administración completo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
